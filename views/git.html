@@ -229,10 +229,9 @@ body{
 
 <!-- 折叠方块（主分支 + 子分支方块） -->
 <div id="collapseBlock" style="color:var(--hana-fg,#1a1d24);user-select:none;flex-direction:column;height:100%;min-height:300px">
-  <div style="text-align:center;padding:6px 0 8px;flex-shrink:0">
+  <div style="text-align:center;padding:6px 0 8px;flex-shrink:0;cursor:pointer" onclick="exitBranchTree()">
     <span style="font-size:12px;font-weight:600;color:var(--hana-fg-muted,#6b7280)">🌳 分支列表</span>
     <span id="blockBranchCount" style="font-size:11px;color:var(--hana-fg-muted,#6b7280);margin-left:6px"></span>
-    <span style="float:right"><button onclick="exitBranchTree()" style="padding:2px 8px;border:1px solid var(--hana-border,#d0d5dd);border-radius:4px;font-size:10px;background:var(--hana-surface,#fff);cursor:pointer;color:var(--hana-fg-muted,#6b7280)">返回</button></span>
   </div>
   <div id="branchCanvas" style="flex:1;position:relative;overflow:hidden;background:var(--hana-bg,#f5f6f8);border-radius:8px;border:1px solid var(--hana-border,#e2e5ea);margin:0 4px 4px 4px">
     <div id="bcInner" style="position:absolute;top:0;left:0;transform-origin:0 0">
