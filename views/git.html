@@ -48,6 +48,8 @@ body{
   padding:10px 12px;margin-bottom:10px;
 }
 .card-title{font-size:12px;font-weight:600;color:var(--hana-fg-muted,#6b7280);margin-bottom:6px}
+.card.dragging{opacity:.5;border-color:var(--hana-accent,#5e6ad2)}
+.card.drag-over{border-color:var(--hana-accent,#5e6ad2);border-style:dashed}
 
 /* 变更列表 */
 .file-list{list-style:none;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
@@ -406,28 +408,8 @@ body{
   </div>
 </div>
 </div>
-
-</div><!-- end panelsArea -->
-</div><!-- end mainInterface -->
-
-<!-- GitHub 帮助气泡 -->
-<div id="ghHelpBubble" style="display:none;position:fixed;z-index:1000;background:var(--hana-surface,#fff);border:1px solid var(--hana-border,#d0d5dd);border-radius:8px;padding:10px 12px;font-size:12px;line-height:1.8;box-shadow:0 4px 12px rgba(0,0,0,0.12);max-width:300px">
-  <div style="font-weight:600;margin-bottom:4px">GitHub 卡片</div>
-  <div style="margin-bottom:6px;font-size:11px;color:var(--hana-fg-muted,#6b7280)">
-    此卡片的功能依赖 GitHub CLI (<code>gh</code>) 工具。
-  </div>
-  <div style="margin-bottom:4px;font-size:11px">
-    <b>安装指南：</b>
-  </div>
-  <div style="font-size:10px;font-family:monospace;background:var(--hana-bg,#f5f6f8);padding:6px 8px;border-radius:4px;margin-bottom:6px">
-    winget install --id GitHub.cli<br>
-    # 或从下面链接下载安装包
-  </div>
-  <a href="https://cli.github.com/" target="_blank" style="font-size:11px;color:var(--hana-accent,#5e6ad2);text-decoration:none">https://cli.github.com/ →</a>
 </div>
 
-
-<!-- GitHub 面板 -->
 <div class="card" id="ghCard">
   <div class="card-title" style="display:flex;align-items:center;gap:6px;margin-bottom:0;cursor:pointer" onclick="toggleGhPanel()">
     <svg viewBox="0 0 512 512" fill="var(--hana-accent,#5e6ad2)" stroke="none" style="width:14px;height:14px;flex-shrink:0"><path d="M 241.5 54 L 270.5 54 L 271.5 55 L 288.5 56 L 314.5 62 L 339.5 71 Q 383.3 90.7 413 124.5 Q 436.3 150.2 450 185.5 L 455 200.5 L 460 222.5 L 461 236.5 L 462 237.5 L 462 248.5 L 463 249.5 L 463 271.5 L 462 272.5 L 461 291.5 L 456 314.5 L 444 346.5 Q 428.1 378.1 403.5 401 Q 376.2 426.7 338.5 442 L 302.5 453 L 279.5 457 L 272.5 457 L 271.5 458 L 258.5 458 L 256 453.5 L 257 451 L 259.5 450 L 277.5 449 L 300.5 445 L 319.5 440 L 345.5 430 Q 383.8 412.3 410 382.5 Q 435.7 354.2 448 312.5 L 454 279.5 L 454 241.5 L 453 240.5 L 451 219.5 L 446 199.5 Q 439.7 179.3 430 162.5 Q 412.6 131.9 386.5 110 Q 361.3 88.2 327.5 75 L 312.5 70 L 285.5 64 L 267.5 63 L 266.5 62 L 246.5 62 L 245.5 63 L 226.5 64 L 203.5 69 Q 184.1 74.6 167.5 83 Q 135.5 99.5 112 124.5 L 110 127.5 Q 82.7 155.2 68 195.5 L 62 216.5 L 59 232.5 L 59 241.5 L 58 242.5 L 58 272.5 L 59 273.5 L 59 281.5 L 60 282.5 L 62 299.5 Q 66.5 320 74 337.5 Q 89.8 374.2 117.5 399 Q 136.1 415.9 159.5 428 L 194.5 443 L 205 445 L 205 438.5 L 206 437.5 L 206 410 L 203.5 411 L 190.5 411 L 179.5 409 L 168.5 404 L 156 392.5 Q 144.4 378.6 136 361.5 L 131.5 357 L 118.5 352 L 114 348.5 L 112 341.5 L 115.5 337 L 117.5 336 L 130.5 336 Q 156.3 343.3 171 361.5 L 179.5 371 Q 185.7 376.3 197.5 376 L 208 371.5 L 210 362.5 L 216 352 Q 174.1 347.8 153 321.5 Q 142.4 309.1 137 291.5 L 134 276.5 L 134 255.5 L 140 231.5 Q 145.6 217.6 155 207.5 L 152 200.5 L 150 182.5 L 153 166.5 L 157.5 158 L 169.5 158 L 180.5 160 L 197.5 166 L 213.5 176 L 225.5 172 L 243.5 170 L 244.5 169 L 272.5 169 L 302.5 175 Q 320.3 157.8 352.5 155 L 355 156 Q 359.8 164 362 175.5 L 362 193.5 L 358 206.5 Q 370.1 220.9 376 241.5 L 379 257.5 L 379 278.5 L 375 296.5 L 368 311.5 Q 360.4 324.9 348.5 334 L 325.5 346 L 295 352 L 304 368.5 L 309 386.5 L 309 395.5 L 310 396.5 L 310 429.5 L 307.5 433 Q 303 434 302 431.5 L 301 426.5 L 302 425.5 L 302 402.5 L 301 401.5 L 301 389.5 L 299 379.5 L 286 353.5 L 286 348.5 L 291.5 344 L 312.5 341 L 328.5 336 Q 342.4 329.9 352 319.5 Q 364 307 369 287.5 L 370 274.5 L 371 273.5 L 371 260.5 L 370 259.5 L 369 247.5 L 365 234.5 Q 359.7 220.3 350 210.5 L 349 206.5 L 352 200.5 L 354 191.5 L 354 178.5 L 350 164 L 332.5 167 Q 315.6 172.6 304.5 184 L 299.5 184 L 292.5 181 L 277.5 178 L 247.5 177 L 246.5 178 L 238.5 178 L 227.5 180 L 215.5 184 L 210.5 184 Q 192.6 168.2 162 166 L 159 176.5 L 159 193.5 L 164 209.5 Q 152.9 220.4 147 236.5 L 142 258.5 L 142 273.5 L 145 289.5 L 152 305.5 Q 159.3 318.3 170.5 327 L 190.5 338 L 224 346 L 226 352.5 L 219 362.5 L 216 376.5 L 214.5 378 L 199.5 384 L 188.5 384 Q 173.9 380.1 166 369.5 L 154.5 357 L 135.5 346 L 128.5 344 L 123.5 344 L 123.5 345 L 130.5 347 L 140 353 L 159 383.5 L 171.5 396 L 181.5 401 L 196.5 402 L 197.5 403 L 198.5 402 Q 206.7 403.7 210.5 401 L 213 402 L 214 404.5 L 214 441.5 L 212 449.5 L 208.5 453 L 203.5 454 Q 173.9 445.6 149.5 432 L 130.5 420 L 105 399 L 81 368.5 L 63 332.5 Q 56.1 313.4 52 291.5 L 51 277.5 L 50 276.5 L 49 252.5 L 50 251.5 L 50 237.5 L 51 236.5 L 53 218.5 Q 57.5 198 65 180.5 Q 85.5 134.5 121.5 104 Q 146 82.5 178.5 69 L 213.5 58 L 230.5 56 L 231.5 55 L 240.5 55 L 241.5 54 Z"/></svg> GitHub
@@ -442,6 +424,7 @@ body{
       <button class="gh-tab" data-tab="list" onclick="switchGhTab('list')" style="padding:2px 8px;border:1px solid var(--hana-border,#d0d5dd);border-radius:4px;font-size:10px;background:var(--hana-surface,#fff);cursor:pointer;color:var(--hana-fg-muted,#6b7280)">列表</button>
       <button class="gh-tab" data-tab="search" onclick="switchGhTab('search')" style="padding:2px 8px;border:1px solid var(--hana-border,#d0d5dd);border-radius:4px;font-size:10px;background:var(--hana-surface,#fff);cursor:pointer;color:var(--hana-fg-muted,#6b7280)">搜索</button>
     </div>
+
 
   <!-- 创建 -->
   <div class="gh-tab-content" id="ghTabCreate">
@@ -479,6 +462,24 @@ body{
     </div>
     <div id="ghSearchResult" style="max-height:210px;overflow-y:auto"></div>
   </div>
+</div><!-- end ghBody -->
+  </div>
+</div>
+
+<!-- GitHub 帮助气泡 -->
+<div id="ghHelpBubble" style="display:none;position:fixed;z-index:1000;background:var(--hana-surface,#fff);border:1px solid var(--hana-border,#d0d5dd);border-radius:8px;padding:10px 12px;font-size:12px;line-height:1.8;box-shadow:0 4px 12px rgba(0,0,0,0.12);max-width:300px">
+  <div style="font-weight:600;margin-bottom:4px">GitHub 卡片</div>
+  <div style="margin-bottom:6px;font-size:11px;color:var(--hana-fg-muted,#6b7280)">
+    此卡片的功能依赖 GitHub CLI (<code>gh</code>) 工具。
+  </div>
+  <div style="margin-bottom:4px;font-size:11px">
+    <b>安装指南：</b>
+  </div>
+  <div style="font-size:10px;font-family:monospace;background:var(--hana-bg,#f5f6f8);padding:6px 8px;border-radius:4px;margin-bottom:6px">
+    winget install --id GitHub.cli<br>
+    # 或从下面链接下载安装包
+  </div>
+  <a href="https://cli.github.com/" target="_blank" style="font-size:11px;color:var(--hana-accent,#5e6ad2);text-decoration:none">https://cli.github.com/ →</a>
 </div>
 
 <!-- 右键菜单 -->
@@ -580,6 +581,127 @@ function cacheClear() {
     var keys = Object.keys(localStorage).filter(function(k) { return k.startsWith("gsl-cache-"); });
     keys.forEach(function(k) { localStorage.removeItem(k); });
   } catch {}
+}
+
+// ======== 卡片拖拽排序 ========
+var CARD_ORDER_KEY = "gsl-card-order";
+var _dragSrc = null;
+var _dropTarget = null;
+var _dropPos = ""; // "before" or "after"
+
+function initCardDrag() {
+  var container = document.getElementById("panelsArea");
+  if (!container) return;
+  // 恢复保存的顺序
+  try {
+    var order = JSON.parse(localStorage.getItem(CARD_ORDER_KEY));
+    if (order && order.length > 0) {
+      var cardMap = {};
+      container.querySelectorAll(".card").forEach(function(c) { cardMap[c.id] = c; });
+      order.forEach(function(id) { if (cardMap[id]) container.appendChild(cardMap[id]); });
+    }
+  } catch {}
+  // 创建指示线
+  var dropLine = document.createElement("div");
+  dropLine.id = "dragDropLine";
+  dropLine.style.cssText = "display:none;height:2px;background:var(--hana-accent,#5e6ad2);margin:2px 0;border-radius:1px;pointer-events:none;position:relative;z-index:10";
+  container.appendChild(dropLine);
+  // 元素级事件
+  container.addEventListener("dragstart", function(e) {
+    var card = e.target.closest(".card");
+    if (!card) return;
+    _dragSrc = card;
+    card.classList.add("dragging");
+    e.dataTransfer.effectAllowed = "move";
+  });
+  container.addEventListener("dragend", function(e) {
+    dropLine.style.display = "none";
+    container.querySelectorAll(".card").forEach(function(c) { c.classList.remove("dragging"); });
+    _dragSrc = null; _dropTarget = null;
+  });
+  container.addEventListener("dragover", function(e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    var cr = container.getBoundingClientRect();
+    var cards = container.querySelectorAll(".card:not(.dragging)");
+    // 检查是否在最上方或最下方
+    if (cards.length > 0) {
+      var firstRect = cards[0].getBoundingClientRect();
+      var lastRect = cards[cards.length - 1].getBoundingClientRect();
+      if (e.clientY < firstRect.top) {
+        // 最上方
+        container.insertBefore(dropLine, cards[0]);
+        dropLine.style.display = "block";
+        _dropTarget = cards[0]; _dropPos = "before";
+        return;
+      }
+      if (e.clientY > lastRect.bottom) {
+        // 最下方
+        container.appendChild(dropLine);
+        dropLine.style.display = "block";
+        _dropTarget = cards[cards.length - 1]; _dropPos = "after";
+        return;
+      }
+    }
+    var target = e.target.closest(".card");
+    if (!target || target === _dragSrc) return;
+    _dropTarget = target;
+    var rect = target.getBoundingClientRect();
+    _dropPos = e.clientY < rect.top + rect.height / 2 ? "before" : "after";
+    if (_dropPos === "before") {
+      container.insertBefore(dropLine, target);
+    } else {
+      container.insertBefore(dropLine, target.nextSibling);
+    }
+    dropLine.style.display = "block";
+  });
+  container.addEventListener("drop", function(e) {
+    e.preventDefault();
+    dropLine.style.display = "none";
+    if (!_dragSrc || !_dropTarget || _dragSrc === _dropTarget) return;
+    if (_dropPos === "before") {
+      container.insertBefore(_dragSrc, _dropTarget);
+    } else {
+      container.insertBefore(_dragSrc, _dropTarget.nextSibling);
+    }
+    saveCardOrder();
+  });
+  // 每个卡片加拖拽把手
+  container.querySelectorAll(".card").forEach(function(c) {
+    c.draggable = true;
+    var hdr = c.querySelector(".card-title");
+    if (hdr && !hdr.querySelector(".drag-handle")) {
+      var handle = document.createElement("span");
+      handle.className = "drag-handle";
+      handle.textContent = "\u2630";
+      handle.style.cssText = "cursor:grab;color:var(--hana-fg-subtle,#62666d);font-size:11px;flex-shrink:0;user-select:none;margin-right:4px";
+      hdr.insertBefore(handle, hdr.firstChild);
+    }
+  });
+
+  // ghCard 在 panelsArea 外部，用 JS 移入以便参与拖拽排序
+  var ghCard = document.getElementById("ghCard");
+  if (ghCard && ghCard.parentElement !== container) {
+    container.appendChild(ghCard);
+    // 重新附上 draggable + 把手
+    ghCard.draggable = true;
+    var ghHdr = ghCard.querySelector(".card-title");
+    if (ghHdr && !ghHdr.querySelector(".drag-handle")) {
+      var ghHandle = document.createElement("span");
+      ghHandle.className = "drag-handle";
+      ghHandle.textContent = "\u2630";
+      ghHandle.style.cssText = "cursor:grab;color:var(--hana-fg-subtle,#62666d);font-size:11px;flex-shrink:0;user-select:none;margin-right:4px";
+      ghHdr.insertBefore(ghHandle, ghHdr.firstChild);
+    }
+  }
+}
+
+function saveCardOrder() {
+  var container = document.getElementById("panelsArea");
+  if (!container) return;
+  var ids = [];
+  container.querySelectorAll(".card").forEach(function(c) { ids.push(c.id); });
+  try { localStorage.setItem(CARD_ORDER_KEY, JSON.stringify(ids)); } catch {}
 }
 
 const STORAGE_KEY = "git-tools-repo-path";
@@ -2413,7 +2535,9 @@ function escapeHtml(s) {
     savePathToStorage(configPath);
   }
   setupCtxMenuEvents();
+  initCardDrag();
   refresh();
+  setTimeout(initCardDrag, 500);
   loadSettingsUI();
   loadNextVersion();
   window.parent.postMessage({ type: "ready" }, "*");
