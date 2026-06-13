@@ -592,6 +592,22 @@ var _dropPos = ""; // "before" or "after"
 function initCardDrag() {
   var container = document.getElementById("panelsArea");
   if (!container) return;
+  // 先把 ghCard 移入 panelsArea（如果不在里面）
+  var ghCard = document.getElementById("ghCard");
+  if (ghCard && ghCard.parentElement !== container) {
+    var refCard = document.getElementById("settingsCard");
+    if (refCard && refCard.nextSibling) { container.insertBefore(ghCard, refCard.nextSibling); }
+    else { container.appendChild(ghCard); }
+    ghCard.draggable = true;
+    var ghHdr = ghCard.querySelector(".card-title");
+    if (ghHdr && !ghHdr.querySelector(".drag-handle")) {
+      var ghHandle = document.createElement("span");
+      ghHandle.className = "drag-handle";
+      ghHandle.textContent = "\u2630";
+      ghHandle.style.cssText = "cursor:grab;color:var(--hana-fg-subtle,#62666d);font-size:11px;flex-shrink:0;user-select:none;margin-right:4px";
+      ghHdr.insertBefore(ghHandle, ghHdr.firstChild);
+    }
+  }
   // 恢复保存的顺序
   try {
     var order = JSON.parse(localStorage.getItem(CARD_ORDER_KEY));
@@ -678,22 +694,6 @@ function initCardDrag() {
       hdr.insertBefore(handle, hdr.firstChild);
     }
   });
-
-  // ghCard 在 panelsArea 外部，用 JS 移入以便参与拖拽排序
-  var ghCard = document.getElementById("ghCard");
-  if (ghCard && ghCard.parentElement !== container) {
-    container.appendChild(ghCard);
-    // 重新附上 draggable + 把手
-    ghCard.draggable = true;
-    var ghHdr = ghCard.querySelector(".card-title");
-    if (ghHdr && !ghHdr.querySelector(".drag-handle")) {
-      var ghHandle = document.createElement("span");
-      ghHandle.className = "drag-handle";
-      ghHandle.textContent = "\u2630";
-      ghHandle.style.cssText = "cursor:grab;color:var(--hana-fg-subtle,#62666d);font-size:11px;flex-shrink:0;user-select:none;margin-right:4px";
-      ghHdr.insertBefore(ghHandle, ghHdr.firstChild);
-    }
-  }
 }
 
 function saveCardOrder() {
@@ -2537,7 +2537,7 @@ function escapeHtml(s) {
   setupCtxMenuEvents();
   initCardDrag();
   refresh();
-  setTimeout(initCardDrag, 500);
+
   loadSettingsUI();
   loadNextVersion();
   window.parent.postMessage({ type: "ready" }, "*");
