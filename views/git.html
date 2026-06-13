@@ -7,24 +7,22 @@
 <style>
 :root{color-scheme:light dark}
 /* Linear 设计系统 */
-:root{--hana-bg:#010102;--hana-fg:#f7f8f8;--hana-surface:#0f1011;--hana-border:#23252a;--hana-accent:#5e6ad2;--hana-accent-hover:#828fff;--hana-fg-muted:#8a8f98;--hana-fg-subtle:#62666d;--hana-scrollbar:rgba(94,106,210,.3)}
-@media(prefers-color-scheme:light){:root{--hana-bg:#f5f6f6;--hana-fg:#000;--hana-surface:#fff;--hana-border:#e2e5ea;--hana-accent:#5e6ad2;--hana-accent-hover:#4a5bc7;--hana-fg-muted:#6b7280;--hana-fg-subtle:#9ca3af;--hana-scrollbar:rgba(94,106,210,.2)}}
+:root{--hana-bg:#010102;--hana-fg:#f7f8f8;--hana-surface:#0f1011;--hana-border:#23252a;--hana-accent:#5e6ad2;--hana-bg-muted:#141516;--hana-fg-muted:#8a8f98;--hana-fg-subtle:#62666d;--hana-border-strong:#34343a;--hana-scrollbar:rgba(94,106,210,.3)}
+@media(prefers-color-scheme:light){:root{--hana-bg:#f5f6f6;--hana-fg:#000;--hana-surface:#fff;--hana-border:#e2e5ea;--hana-accent:#5e6ad2;--hana-bg-muted:#f6f7f7;--hana-fg-muted:#6b7280;--hana-fg-subtle:#9ca3af;--hana-border-strong:#d0d5dd;--hana-scrollbar:rgba(94,106,210,.2)}}
 *{box-sizing:border-box;margin:0;padding:0}
 /* 滚动条 */
 html,body{height:100%;margin:0}
-html{scrollbar-width:thin!important;scrollbar-color:var(--hana-scrollbar) transparent!important}
+html{scrollbar-width:thin!important;scrollbar-color:var(--hana-scrollbar,rgba(94,106,210,.3)) transparent!important}
 html::-webkit-scrollbar{width:3px!important}
 html::-webkit-scrollbar-track{background:transparent!important}
-html::-webkit-scrollbar-thumb{background:var(--hana-scrollbar)!important;border-radius:2px!important}
-html::-webkit-scrollbar{width:3px!important}
-html::-webkit-scrollbar-track{background:transparent!important}
-html::-webkit-scrollbar-thumb{background:rgba(128,128,128,0.2)!important;border-radius:2px!important}
+html::-webkit-scrollbar-thumb{background:var(--hana-scrollbar,rgba(94,106,210,.3))!important;border-radius:2px!important}
 
 body{
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
   font-size:13px;line-height:1.5;
   background:var(--hana-bg,#f5f6f8);color:var(--hana-fg,#1a1d24);
   padding:12px;min-height:100vh;
+  overflow-y:auto;
 }
 /* 头部 */
 .header{display:flex;align-items:center;gap:8px;margin-bottom:12px}
@@ -250,8 +248,7 @@ body{
   <h1>Git Tools <span style="font-size:11px;font-weight:400;color:var(--hana-fg-muted,#6b7280)">v0.2.0</span></h1>
   <span class="branch" id="branch" onclick="toggleBranchTree()" style="cursor:pointer" title="点击查看分支树">—</span>
   <button class="btn-refresh" id="btnRefresh" onclick="refresh()">↻</button>
-  <button onclick="toggleSettings()" style="width:28px;height:28px;border:1px solid var(--hana-border,#d0d5dd);border-radius:6px;background:var(--hana-surface,#fff);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;color:var(--hana-fg,#1a1d24)">⚙</button>
-  <button onclick="toggleGhPanel()" style="width:28px;height:28px;border:1px solid var(--hana-border,#d0d5dd);border-radius:6px;background:var(--hana-surface,#fff);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;color:var(--hana-fg,#1a1d24)" title="GitHub 管理">🐙</button>
+  
 </div>
 
 <div id="panelsArea">
@@ -309,7 +306,7 @@ body{
   <div class="card-title" style="display:flex;align-items:center;gap:6px">
     📄 变更文件
     <span style="flex:1"></span>
-    <button onclick="showStatusHelp(event)" style="width:18px;height:18px;border:1px solid var(--hana-border,#d0d5dd);border-radius:50%;background:var(--hana-surface,#fff);cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center;color:var(--hana-fg-muted,#6b7280);line-height:1">?</button>
+    <button onclick="showStatusHelp()" style="width:18px;height:18px;border:1px solid var(--hana-border,#d0d5dd);border-radius:50%;background:var(--hana-surface,#fff);cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center;color:var(--hana-fg-muted,#6b7280);line-height:1">?</button>
     <button id="diffModeBtn" onclick="toggleGlobalDiffMode()" style="font-size:10px;padding:1px 6px;border:1px solid var(--hana-border,#d0d5dd);border-radius:4px;background:var(--hana-surface,#fff);cursor:pointer;color:var(--hana-fg-muted,#6b7280)">详细</button>
   </div>
   <ul class="file-list" id="fileList">
@@ -348,7 +345,7 @@ body{
 <div class="card" id="logCard">
   <div class="card-title" style="display:flex;align-items:center;gap:6px">
     📜 最近提交
-    <button onclick="showResetHelp(event)" style="width:18px;height:18px;margin-left:auto;border:1px solid var(--hana-border,#d0d5dd);border-radius:50%;background:var(--hana-surface,#fff);cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center;color:var(--hana-fg-muted,#6b7280);line-height:1">?</button>
+    <button onclick="showResetHelp()" style="width:18px;height:18px;margin-left:auto;border:1px solid var(--hana-border,#d0d5dd);border-radius:50%;background:var(--hana-surface,#fff);cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center;color:var(--hana-fg-muted,#6b7280);line-height:1">?</button>
     <button id="toggleHashBtn" onclick="toggleHashDisplay()" style="font-size:10px;padding:1px 6px;border:1px solid var(--hana-border,#d0d5dd);border-radius:4px;background:var(--hana-surface,#fff);cursor:pointer;color:var(--hana-fg-muted,#6b7280)">tag</button>
     <button id="compareToggleBtn" onclick="toggleCompareMode()" style="font-size:10px;padding:1px 6px;border:1px solid var(--hana-border,#d0d5dd);border-radius:4px;background:var(--hana-surface,#fff);cursor:pointer;color:var(--hana-fg-muted,#6b7280)">对比</button>
   </div>
@@ -364,17 +361,14 @@ body{
   </div>
 </div>
 
-</div><!-- end panelsArea -->
-</div><!-- end mainInterface -->
 
-<!-- 设置面板 -->
-<div id="settingsPanel" class="card" style="display:none">
-  <div class="card-title" style="display:flex;align-items:center;gap:6px">
+<div class="card" id="settingsCard">
+  <div class="card-title" style="display:flex;align-items:center;gap:6px;margin-bottom:0;cursor:pointer" onclick="toggleSettings()">
     ⚙ 设置
     <span style="flex:1"></span>
-    <button onclick="toggleSettings()" style="padding:2px 8px;border:1px solid var(--hana-border,#d0d5dd);border-radius:4px;font-size:10px;background:var(--hana-surface,#fff);cursor:pointer;color:var(--hana-fg-muted,#6b7280)">关闭</button>
+    <span id="settingsToggle" style="color:var(--hana-accent,#5e6ad2);font-size:11px">▸</span>
   </div>
-  <div style="font-size:12px">
+  <div id="settingsBody" style="font-size:12px;max-height:0;overflow:hidden;transition:max-height .2s ease">
     <label style="display:block;margin:6px 0">暂存模式
       <select id="cfgStashMode" onchange="saveSetting('stashMode',this.value)" style="float:right;padding:2px 6px;border:1px solid var(--hana-border,#d0d5dd);border-radius:4px;font-size:11px;background:var(--hana-surface,#fff)">
         <option value="normal">仅跟踪文件</option>
@@ -404,20 +398,27 @@ body{
     </label>
   </div>
 </div>
+</div>
+
+</div><!-- end panelsArea -->
+</div><!-- end mainInterface -->
+
+
 
 <!-- GitHub 面板 -->
-<div id="ghPanel" class="card" style="display:none">
-  <div class="card-title" style="display:flex;align-items:center;gap:6px">
+<div class="card" id="ghCard">
+  <div class="card-title" style="display:flex;align-items:center;gap:6px;margin-bottom:0;cursor:pointer" onclick="toggleGhPanel()">
     🐙 GitHub
-    <div style="display:flex;gap:2px;margin-left:8px">
+    <span style="flex:1"></span>
+    <span id="ghToggle" style="color:var(--hana-accent,#5e6ad2);font-size:11px">▸</span>
+  </div>
+  <div id="ghBody" style="max-height:0;overflow:hidden;transition:max-height .2s ease">
+    <div style="display:flex;gap:2px;margin-bottom:8px">
       <button class="gh-tab" data-tab="create" onclick="switchGhTab('create')" style="padding:2px 8px;border:1px solid var(--hana-border,#d0d5dd);border-radius:4px;font-size:10px;background:var(--hana-accent,#4a8cff);color:#fff;cursor:pointer">创建</button>
       <button class="gh-tab" data-tab="clone" onclick="switchGhTab('clone')" style="padding:2px 8px;border:1px solid var(--hana-border,#d0d5dd);border-radius:4px;font-size:10px;background:var(--hana-surface,#fff);cursor:pointer;color:var(--hana-fg-muted,#6b7280)">克隆</button>
       <button class="gh-tab" data-tab="list" onclick="switchGhTab('list')" style="padding:2px 8px;border:1px solid var(--hana-border,#d0d5dd);border-radius:4px;font-size:10px;background:var(--hana-surface,#fff);cursor:pointer;color:var(--hana-fg-muted,#6b7280)">列表</button>
       <button class="gh-tab" data-tab="search" onclick="switchGhTab('search')" style="padding:2px 8px;border:1px solid var(--hana-border,#d0d5dd);border-radius:4px;font-size:10px;background:var(--hana-surface,#fff);cursor:pointer;color:var(--hana-fg-muted,#6b7280)">搜索</button>
     </div>
-    <span style="flex:1"></span>
-    <button onclick="toggleGhPanel()" style="padding:2px 8px;border:1px solid var(--hana-border,#d0d5dd);border-radius:4px;font-size:10px;background:var(--hana-surface,#fff);cursor:pointer;color:var(--hana-fg-muted,#6b7280)">关闭</button>
-  </div>
 
   <!-- 创建 -->
   <div class="gh-tab-content" id="ghTabCreate">
@@ -444,7 +445,7 @@ body{
   <!-- 列表 -->
   <div class="gh-tab-content" id="ghTabList" style="display:none">
     <div style="font-size:11px;color:var(--hana-fg-muted,#6b7280);margin-bottom:4px">你的 GitHub 仓库</div>
-    <div id="ghRepoList" style="max-height:250px;overflow-y:auto">加载中...</div>
+    <div id="ghRepoList" style="max-height:240px;overflow-y:auto">加载中...</div>
   </div>
 
   <!-- 搜索 -->
@@ -453,7 +454,7 @@ body{
       <input type="text" id="ghSearchQuery" placeholder="搜仓库，如 git tools" autocomplete="off" style="flex:1;padding:5px 8px;border:1px solid var(--hana-border,#d0d5dd);border-radius:6px;font-size:12px;background:var(--hana-bg,#f5f6f8);color:var(--hana-fg,#1a1d24);outline:none" onkeydown="if(event.key=='Enter')ghSearch()">
       <button onclick="ghSearch()" style="padding:5px 10px;border:0;border-radius:6px;font-size:12px;font-weight:500;background:var(--hana-accent,#4a8cff);color:#fff;cursor:pointer">搜索</button>
     </div>
-    <div id="ghSearchResult" style="max-height:250px;overflow-y:auto"></div>
+    <div id="ghSearchResult" style="max-height:210px;overflow-y:auto"></div>
   </div>
 </div>
 
@@ -631,12 +632,18 @@ function cancelEditPath() {
 }
 // ======== 设置 ========
 function toggleSettings() {
-  const sp = document.getElementById("settingsPanel");
-  const pa = document.getElementById("panelsArea");
-  if (sp.style.display !== "none") { sp.style.display = "none"; pa.style.display = ""; return; }
-  pa.style.display = "none";
-  sp.style.display = "";
-  loadSettingsUI();
+  var body = document.getElementById("settingsBody");
+  var toggle = document.getElementById("settingsToggle");
+  if (!body) return;
+  var open = body.style.maxHeight !== "0px" && body.style.maxHeight !== "";
+  if (open) {
+    body.style.maxHeight = "0px";
+    if (toggle) toggle.textContent = "▸";
+  } else {
+    loadSettingsUI();
+    body.style.maxHeight = body.scrollHeight + "px";
+    if (toggle) toggle.textContent = "▾";
+  }
 }
 
 async function loadSettingsUI() {
@@ -665,13 +672,19 @@ async function saveSetting(key, val) {
 
 // ======== GitHub 面板 ========
 function toggleGhPanel() {
-  const gp = document.getElementById("ghPanel");
-  const pa = document.getElementById("panelsArea");
-  if (gp.style.display !== "none") { gp.style.display = "none"; pa.style.display = ""; return; }
-  pa.style.display = "none";
-  gp.style.display = "";
-  switchGhTab("create");
-  loadGhList();
+  var body = document.getElementById("ghBody");
+  var toggle = document.getElementById("ghToggle");
+  if (!body) return;
+  var open = body.style.maxHeight !== "0px" && body.style.maxHeight !== "";
+  if (open) {
+    body.style.maxHeight = "0px";
+    if (toggle) toggle.textContent = "▸";
+  } else {
+    body.style.maxHeight = body.scrollHeight + "px";
+    if (toggle) toggle.textContent = "▾";
+    switchGhTab("create");
+    loadGhList();
+  }
 }
 
 function switchGhTab(tab) {
@@ -762,6 +775,11 @@ async function loadGhList() {
         </span>
       </div>`
     ).join('');
+    // 重新计算卡片高度
+    var ghBody = document.getElementById("ghBody");
+    if (ghBody && ghBody.style.maxHeight !== "0px" && ghBody.style.maxHeight !== "") {
+      ghBody.style.maxHeight = ghBody.scrollHeight + "px";
+    }
   } catch { el.innerHTML = "加载失败"; }
 }
 
@@ -1480,22 +1498,14 @@ function renderStatus(data) {
       const statusClass = item.status === "??" ? "UNTRACKED" : item.status;
       const isConflict = item.status.includes("U");
       const statStr = item.added || item.deleted ? `<span style="margin-left:auto;font-size:11px;white-space:nowrap"><span style="color:#27ae60;font-weight:600">+${item.added}</span>/<span style="color:#e74c3c;font-weight:600">-${item.deleted}</span></span>` : '';
-      li.innerHTML = `<span class="file-status ${statusClass}">${item.status}</span><span class="diff-trigger" data-file="${escapeHtml(item.name)}" style="cursor:pointer;flex:1;overflow:hidden;text-overflow:ellipsis" title="点击查看 diff">${escapeHtml(item.name)}</span>${statStr}`
-        + (isConflict ? `<button class="resolve-btn" data-file="${escapeHtml(item.name)}" style="margin-left:auto;border:1px solid #e74c3c;border-radius:4px;font-size:11px;background:transparent;color:#e74c3c;cursor:pointer;white-space:nowrap">解决</button>` : '');
+      li.innerHTML = `<span class="file-status ${statusClass}">${item.status}</span><span onclick="toggleDiff('${escapeHtml(item.name)}', this)" style="cursor:pointer;flex:1;overflow:hidden;text-overflow:ellipsis" title="点击查看 diff">${escapeHtml(item.name)}</span>${statStr}`
+        + (isConflict ? `<button onclick="resolveConflict('${escapeHtml(item.name)}')" style="margin-left:auto;padding:1px 6px;border:1px solid #e74c3c;border-radius:4px;font-size:11px;background:transparent;color:#e74c3c;cursor:pointer;white-space:nowrap">解决</button>` : '');
       fl.appendChild(li);
     }
   }
 
   // 提交按钮状态
   document.getElementById("btnCommit").disabled = !data.hasChanges;
-
-  // 文件列表事件委托
-  fl.onclick = function(e) {
-    var trigger = e.target.closest(".diff-trigger");
-    if (trigger) { toggleDiff(trigger.getAttribute("data-file"), trigger); return; }
-    var resolveBtn = e.target.closest(".resolve-btn");
-    if (resolveBtn) { resolveConflict(resolveBtn.getAttribute("data-file")); return; }
-  };
 }
 
 // 格式化提交时间
@@ -1959,11 +1969,10 @@ async function toggleDiff(file, nameEl) {
 
 // 状态帮助气泡
 let statusHelpListener = null;
-function showStatusHelp(e) {
-  if (!e) e = window.event;
+function showStatusHelp() {
   const bubble = document.getElementById("statusHelpBubble");
   if (bubble.style.display !== "none") { bubble.style.display = "none"; return; }
-  const btn = e.target;
+  const btn = event.target;
   const rect = btn.getBoundingClientRect();
   bubble.style.right = (window.innerWidth - rect.right) + "px";
   bubble.style.left = "auto";
@@ -1982,11 +1991,10 @@ function showStatusHelp(e) {
 
 // reset 帮助气泡
 let resetHelpListener = null;
-function showResetHelp(e) {
-  if (!e) e = window.event;
+function showResetHelp() {
   const bubble = document.getElementById("resetHelpBubble");
   if (bubble.style.display !== "none") { bubble.style.display = "none"; return; }
-  const btn = e.target;
+  const btn = event.target;
   const rect = btn.getBoundingClientRect();
   bubble.style.right = (window.innerWidth - rect.right) + "px";
   bubble.style.left = "auto";
