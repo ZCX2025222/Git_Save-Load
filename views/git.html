@@ -250,7 +250,7 @@ body{
 <div class="header">
   <h1>Save/Load <span style="font-size:11px;font-weight:400;color:var(--hana-fg-muted,#6b7280)">v1.0</span></h1>
   <span class="branch" id="branch" onclick="toggleBranchTree()" style="cursor:pointer" title="点击查看分支树">—</span>
-  <button class="btn-refresh" id="btnRefresh" onclick="refresh()">↻</button>
+  <button class="btn-refresh" id="btnRefresh" onclick="doRefreshAll()">↻</button>
   
 </div>
 
@@ -564,6 +564,55 @@ body{
 <script>
 const BASE = window.location.pathname.replace(/\/widget\/?$/, "");
 let currentPath = "";
+// ======== 事件总线（卡片间通信） ========
+var Bus = {
+  _handlers: {},
+  on: function(event, fn) {
+    if (!this._handlers[event]) this._handlers[event] = [];
+    this._handlers[event].push(fn);
+    return fn;
+  },
+  off: function(event, fn) {
+    var list = this._handlers[event];
+    if (list) this._handlers[event] = list.filter(function(f) { return f !== fn; });
+  },
+  emit: function(event, data) {
+    var list = this._handlers[event];
+    if (list) list.forEach(function(fn) { try { fn(data); } catch {} });
+    // 同时触发 '*' 通配监听
+    var all = this._handlers['*'];
+    if (all) all.forEach(function(fn) { try { fn(event, data); } catch {} });
+  }
+};
+
+// ======== 卡片注册系统 ========
+var Cards = {};
+
+Cards.register = function(id, config) {
+  var card = {
+    id: id,
+    el: document.getElementById(id),
+    refresh: config.refresh || function(){},
+    events: config.events || [],
+    collapsed: config.collapsed !== false,
+    onCollapse: config.onCollapse || null,
+  };
+  // 订阅事件
+  card.events.forEach(function(ev) {
+    Bus.on(ev, function() {
+      card.refresh();
+    });
+  });
+  Cards[id] = card;
+  return card;
+};
+
+Cards.refreshAll = function() {
+  for (var id in Cards) {
+    if (Cards[id].refresh) Cards[id].refresh();
+  }
+};
+
 // ======== 缓存机制（避免重复请求，10秒有效） ========
 var CACHE_TTL = 10000;
 function cacheSet(key, data) {
@@ -1492,6 +1541,7 @@ function setBranchNote(name) {
 }
 
 async function deleteBranch(name) {
+  Bus.emit("branch-delete");
   var p = currentPath || getSavedPath();
   if (!p) return;
   try {
@@ -1506,6 +1556,7 @@ async function deleteBranch(name) {
 }
 
 async function switchBranch(name) {
+  Bus.emit("branch-switch");
   document.getElementById("ctxMenu").style.display = "none";
   var p = currentPath || getSavedPath();
   if (!p) return;
@@ -1620,6 +1671,27 @@ async function createChildBranch(parentName) {
 }
 
 // 刷新所有状态
+function doRefreshAll() {
+  compareCleanup();
+  var btn = document.getElementById("btnRefresh");
+  if (btn) btn.classList.add("spinning");
+  cacheClear();
+  window._refreshPending = 0;
+  window._refreshDone = 0;
+  // 统计订阅了 refresh-all 的卡片数
+  if (Bus._handlers['refresh-all']) window._refreshPending = Bus._handlers['refresh-all'].length;
+  Bus.emit("refresh-all");
+  loadNextVersion();
+  // 超时兜底
+  setTimeout(function() {
+    if (window._refreshDone < window._refreshPending) {
+      window._refreshDone = window._refreshPending;
+      if (btn) btn.classList.remove("spinning");
+      toast("刷新完成", "success");
+    }
+  }, 3000);
+}
+
 async function refresh() {
   compareCleanup();
   const btn = document.getElementById("btnRefresh");
@@ -1938,6 +2010,7 @@ function renderLog(data) {
 // 提交
 async function doCommit() {
   cacheClear();
+  Bus.emit("commit");
   const msg = document.getElementById("commitMsg").value.trim();
   if (!msg) { toast("请输入提交消息", "err"); return; }
 
@@ -1983,6 +2056,7 @@ async function doCommit() {
 // ======== 推送 ========
 async function doPush(btn) {
   cacheClear();
+  Bus.emit("push");
   const p = currentPath || getSavedPath();
   const orig = btn.textContent;
   btn.disabled = true; btn.style.opacity = ".5"; btn.textContent = "推送中...";
@@ -2014,6 +2088,7 @@ async function doPush(btn) {
 // ======== 拉取 ========
 async function doPull(btn) {
   cacheClear();
+  Bus.emit("pull");
   const p = currentPath || getSavedPath();
   const orig = btn.textContent;
   btn.disabled = true; btn.style.opacity = ".5"; btn.textContent = "拉取中...";
@@ -2116,6 +2191,7 @@ function doReset(hash) {
 
 async function doResetExecute(hash, mode) {
   cacheClear();
+  Bus.emit("reset");
   try {
     const res = await fetch(apiUrl("/api/reset"), {
       method: "POST",
@@ -2536,6 +2612,19 @@ function escapeHtml(s) {
   }
   setupCtxMenuEvents();
   initCardDrag();
+  // 注册卡片（事件驱动的自动刷新）
+  Cards.register("fileCard", { events: ["commit","push","pull","reset","branch-switch","refresh-all"], refresh: function(){
+    var p = currentPath || getSavedPath();
+    if (p) { fetch(apiUrl("/api/status?path="+encodeURIComponent(p))).then(function(r){return r.json()}).then(function(d){renderStatus(d); try{window._refreshDone++;if(window._refreshDone>=window._refreshPending){var b=document.getElementById("btnRefresh");if(b)b.classList.remove("spinning");toast("刷新完成","success")}}catch{}}); }
+  }});
+  Cards.register("logCard", { events: ["commit","reset","branch-switch","refresh-all"], refresh: function(){
+    var p = currentPath || getSavedPath();
+    if (p) { fetch(apiUrl("/api/log?count=10&path="+encodeURIComponent(p))).then(function(r){return r.json()}).then(function(d){renderLog(d); try{window._refreshDone++;if(window._refreshDone>=window._refreshPending){var b=document.getElementById("btnRefresh");if(b)b.classList.remove("spinning");toast("刷新完成","success")}}catch{}}); }
+  }});
+  Cards.register("stashCard", { events: ["commit","stash-push","stash-pop","stash-drop","refresh-all"], refresh: function(){
+    var p = currentPath || getSavedPath();
+    if (p) { fetch(apiUrl("/api/stash/list?path="+encodeURIComponent(p))).then(function(r){return r.json()}).then(function(d){loadStash(); try{window._refreshDone++;if(window._refreshDone>=window._refreshPending){var b=document.getElementById("btnRefresh");if(b)b.classList.remove("spinning");toast("刷新完成","success")}}catch{}}); }
+  }});
   refresh();
 
   loadSettingsUI();
