@@ -1,0 +1,50 @@
+{
+  "manifestVersion": 1,
+  "id": "git-save-load",
+  "name": "Git Save/Load",
+  "version": "1.0.0",
+  "description": "Git 存档与读档。支持一键存档、版本历史浏览、分支管理、远程推送/拉取。",
+  "trust": "full-access",
+  "minAppVersion": "0.82.0",
+  "contributes": {
+    "widget": {
+      "title": "Git Save/Load",
+      "icon": "<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'><path d='M12 2L2 7l10 5 10-5-10-5z'/><path d='M2 17l10 5 10-5'/><path d='M2 12l10 5 10-5'/></svg>",
+      "route": "/widget"
+    },
+    "configuration": {
+      "type": "object",
+      "properties": {
+        "repoPath": {
+          "type": "string",
+          "default": "",
+          "description": "管理的 Git 仓库路径"
+        },
+        "stashMode": {
+          "type": "string",
+          "default": "untracked",
+          "enum": ["normal", "untracked", "all"],
+          "description": "暂存模式"
+        },
+        "pushMode": {
+          "type": "string",
+          "default": "normal",
+          "enum": ["normal", "force-with-lease", "force"],
+          "description": "推送模式"
+        },
+        "pullMode": {
+          "type": "string",
+          "default": "merge",
+          "enum": ["merge", "rebase", "ff-only"],
+          "description": "拉取模式"
+        },
+        "defaultDiffMode": {
+          "type": "string",
+          "default": "detail",
+          "enum": ["detail", "simple"],
+          "description": "默认 diff 显示模式"
+        }
+      }
+    }
+  }
+}
