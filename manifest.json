@@ -43,6 +43,12 @@
           "default": "detail",
           "enum": ["detail", "simple"],
           "description": "默认 diff 显示模式"
+        },
+        "theme": {
+          "type": "string",
+          "default": "light",
+          "enum": ["light", "dark"],
+          "description": "主题"
         }
       }
     }

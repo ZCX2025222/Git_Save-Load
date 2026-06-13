@@ -5,10 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Git Tools</title>
 <style>
-:root{color-scheme:light dark}
-/* Linear 设计系统 */
-:root{--hana-bg:#010102;--hana-fg:#f7f8f8;--hana-surface:#0f1011;--hana-border:#23252a;--hana-accent:#5e6ad2;--hana-bg-muted:#141516;--hana-fg-muted:#8a8f98;--hana-fg-subtle:#62666d;--hana-border-strong:#34343a;--hana-scrollbar:rgba(94,106,210,.3)}
-@media(prefers-color-scheme:light){:root{--hana-bg:#f5f6f6;--hana-fg:#000;--hana-surface:#fff;--hana-border:#e2e5ea;--hana-accent:#5e6ad2;--hana-bg-muted:#f6f7f7;--hana-fg-muted:#6b7280;--hana-fg-subtle:#9ca3af;--hana-border-strong:#d0d5dd;--hana-scrollbar:rgba(94,106,210,.2)}}
+:root{color-scheme:light}
+/* Linear 设计系统 — 浅色默认 */
+:root{--hana-bg:#f5f6f6;--hana-fg:#000;--hana-surface:#fff;--hana-border:#e2e5ea;--hana-accent:#5e6ad2;--hana-bg-muted:#f6f7f7;--hana-fg-muted:#6b7280;--hana-fg-subtle:#9ca3af;--hana-border-strong:#d0d5dd;--hana-scrollbar:rgba(94,106,210,.2)}
+/* 深色主题 */
+.theme-dark{--hana-bg:#010102;--hana-fg:#f7f8f8;--hana-surface:#0f1011;--hana-border:#23252a;--hana-accent:#5e6ad2;--hana-bg-muted:#141516;--hana-fg-muted:#8a8f98;--hana-fg-subtle:#62666d;--hana-border-strong:#34343a;--hana-scrollbar:rgba(94,106,210,.3)}
 *{box-sizing:border-box;margin:0;padding:0}
 /* 滚动条 */
 html,body{height:100%;margin:0}
@@ -395,6 +396,12 @@ body{
         <option value="simple">精简</option>
       </select>
     </label>
+    <label style="display:block;margin:6px 0">主题
+      <select id="cfgTheme" onchange="switchTheme(this.value)" style="float:right;padding:2px 6px;border:1px solid var(--hana-border,#d0d5dd);border-radius:4px;font-size:11px;background:var(--hana-surface,#fff)">
+        <option value="light">浅色</option>
+        <option value="dark">深色</option>
+      </select>
+    </label>
   </div>
 </div>
 </div>
@@ -657,6 +664,24 @@ async function loadSettingsUI() {
     set("cfgPullMode", c.pullMode);
     set("cfgDiffMode", c.defaultDiffMode);
   } catch {}
+  // 应用保存的主题
+  var savedTheme = localStorage.getItem("git-sl-theme");
+  if (savedTheme) {
+    applyTheme(savedTheme);
+    var themeSel = document.getElementById("cfgTheme");
+    if (themeSel) themeSel.value = savedTheme;
+  }
+}
+
+function switchTheme(val) {
+  applyTheme(val);
+  localStorage.setItem("git-sl-theme", val);
+  saveSetting("theme", val);
+}
+
+function applyTheme(theme) {
+  document.body.classList.toggle("theme-dark", theme === "dark");
+  document.documentElement.style.colorScheme = theme === "dark" ? "dark" : "light";
 }
 
 async function saveSetting(key, val) {
@@ -2268,12 +2293,16 @@ function escapeHtml(s) {
 
 // 初始加载：先从插件配置读路径，再刷新状态
 (async function init() {
-  const configPath = await fetchConfigPath();
+  // 应用主题
+  var savedTheme = localStorage.getItem("git-sl-theme") || "light";
+  applyTheme(savedTheme);
+  var configPath = await fetchConfigPath();
   if (configPath) {
     savePathToStorage(configPath);
   }
   setupCtxMenuEvents();
   refresh();
+  loadSettingsUI();
   loadNextVersion();
   window.parent.postMessage({ type: "ready" }, "*");
 })();

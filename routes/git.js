@@ -1,8 +1,8 @@
 // git-tools / routes / git.js
 // 提供后端 API + 页面渲染。
 
-import { readFile, writeFile } from "node:fs/promises";
-import { readFileSync, writeFileSync, unlinkSync } from "node:fs";
+import { readFile, writeFile, mkdir } from "node:fs/promises";
+import { readFileSync, writeFileSync, unlinkSync, mkdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { execSync } from "node:child_process";
@@ -520,6 +520,7 @@ export default function (app, ctx) {
         current = JSON.parse(data);
       } catch {}
       const merged = { ...current, ...body };
+      mkdirSync(join(configPath(ctx), ".."), { recursive: true });
       await writeFile(configPath(ctx), JSON.stringify(merged, null, 2), "utf8");
       return c.json({ ok: true, config: merged });
     } catch (e) { return c.json({ ok: false, message: e.message }); }
