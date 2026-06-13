@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Git Tools</title>
+<title>Save/Load</title>
 <style>
 :root{color-scheme:light}
 /* Linear 设计系统 — 浅色默认 */
@@ -246,7 +246,7 @@ body{
 <div id="mainInterface">
 
 <div class="header">
-  <h1>Git Tools <span style="font-size:11px;font-weight:400;color:var(--hana-fg-muted,#6b7280)">v0.2.0</span></h1>
+  <h1>Save/Load <span style="font-size:11px;font-weight:400;color:var(--hana-fg-muted,#6b7280)">v1.0</span></h1>
   <span class="branch" id="branch" onclick="toggleBranchTree()" style="cursor:pointer" title="点击查看分支树">—</span>
   <button class="btn-refresh" id="btnRefresh" onclick="refresh()">↻</button>
   
@@ -410,13 +410,29 @@ body{
 </div><!-- end panelsArea -->
 </div><!-- end mainInterface -->
 
+<!-- GitHub 帮助气泡 -->
+<div id="ghHelpBubble" style="display:none;position:fixed;z-index:1000;background:var(--hana-surface,#fff);border:1px solid var(--hana-border,#d0d5dd);border-radius:8px;padding:10px 12px;font-size:12px;line-height:1.8;box-shadow:0 4px 12px rgba(0,0,0,0.12);max-width:300px">
+  <div style="font-weight:600;margin-bottom:4px">GitHub 卡片</div>
+  <div style="margin-bottom:6px;font-size:11px;color:var(--hana-fg-muted,#6b7280)">
+    此卡片的功能依赖 GitHub CLI (<code>gh</code>) 工具。
+  </div>
+  <div style="margin-bottom:4px;font-size:11px">
+    <b>安装指南：</b>
+  </div>
+  <div style="font-size:10px;font-family:monospace;background:var(--hana-bg,#f5f6f8);padding:6px 8px;border-radius:4px;margin-bottom:6px">
+    winget install --id GitHub.cli<br>
+    # 或从下面链接下载安装包
+  </div>
+  <a href="https://cli.github.com/" target="_blank" style="font-size:11px;color:var(--hana-accent,#5e6ad2);text-decoration:none">https://cli.github.com/ →</a>
+</div>
 
 
 <!-- GitHub 面板 -->
 <div class="card" id="ghCard">
   <div class="card-title" style="display:flex;align-items:center;gap:6px;margin-bottom:0;cursor:pointer" onclick="toggleGhPanel()">
-    🐙 GitHub
+    GitHub
     <span style="flex:1"></span>
+    <button onclick="event.stopPropagation();showGhHelp(event)" style="width:18px;height:18px;border:1px solid var(--hana-border,#d0d5dd);border-radius:50%;background:var(--hana-surface,#fff);cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center;color:var(--hana-fg-muted,#6b7280);line-height:1;flex-shrink:0">?</button>
     <span id="ghToggle" style="color:var(--hana-accent,#5e6ad2);font-size:11px">▸</span>
   </div>
   <div id="ghBody" style="max-height:0;overflow:hidden;transition:max-height .2s ease">
@@ -482,8 +498,9 @@ body{
 </div>
 
 <!-- 状态帮助气泡 -->
-<div id="statusHelpBubble" style="display:none;position:fixed;z-index:1001;background:var(--hana-surface,#fff);border:1px solid var(--hana-border,#d0d5dd);border-radius:8px;padding:10px 12px;font-size:12px;line-height:2;box-shadow:0 4px 12px rgba(0,0,0,0.12);max-width:240px">
-  <div style="font-weight:600;margin-bottom:4px">文件状态说明</div>
+<div id="statusHelpBubble" style="display:none;position:fixed;z-index:1001;background:var(--hana-surface,#fff);border:1px solid var(--hana-border,#d0d5dd);border-radius:8px;padding:10px 12px;font-size:12px;line-height:2;box-shadow:0 4px 12px rgba(0,0,0,0.12);max-width:260px">
+  <div style="font-weight:600;margin-bottom:4px">📂 变更文件 — 文件状态说明</div>
+  <div style="font-size:11px;color:var(--hana-fg-muted,#6b7280);margin-bottom:6px">点击文件名可查看具体变更内容（diff）</div>
   <div style="display:grid;grid-template-columns:auto 1fr;gap:0 8px">
     <span style="font-weight:700;color:#95a5a6">??</span><span>未跟踪（新文件）</span>
     <span style="font-weight:700;color:#e67e22">M</span><span>已修改</span>
@@ -495,15 +512,16 @@ body{
 </div>
 
 <!-- reset 帮助气泡 -->
-<div id="resetHelpBubble" style="display:none;position:fixed;z-index:1000;background:var(--hana-surface,#fff);border:1px solid var(--hana-border,#d0d5dd);border-radius:8px;padding:10px 12px;font-size:12px;line-height:1.8;box-shadow:0 4px 12px rgba(0,0,0,0.12);max-width:300px">
-  <div style="font-weight:600;margin-bottom:6px">回滚模式说明</div>
+<div id="resetHelpBubble" style="display:none;position:fixed;z-index:1000;background:var(--hana-surface,#fff);border:1px solid var(--hana-border,#d0d5dd);border-radius:8px;padding:10px 12px;font-size:12px;line-height:1.8;box-shadow:0 4px 12px rgba(0,0,0,0.12);max-width:320px">
+  <div style="font-weight:600;margin-bottom:4px">📜 提交记录 — 回滚模式说明</div>
+  <div style="font-size:11px;color:var(--hana-fg-muted,#6b7280);margin-bottom:6px">点击 commit hash 或回滚按钮可选择回滚模式</div>
   <div style="display:grid;grid-template-columns:auto 1fr;gap:2px 8px">
     <span style="font-weight:600;color:#e67e22">soft</span>
-    <span>只移 HEAD，保留代码和暂存</span>
+    <span>仅移动 HEAD 指针，代码和暂存区不变</span>
     <span style="font-weight:600;color:#3498db">mixed</span>
-    <span>移 HEAD + 清暂存，代码保留</span>
+    <span>移动 HEAD + 清空暂存区，代码保留</span>
     <span style="font-weight:600;color:#e74c3c">hard</span>
-    <span>彻底还原，未提交改动全丢</span>
+    <span>⚠ 彻底还原，未提交的修改全部丢失</span>
   </div>
 </div>
 
@@ -700,14 +718,14 @@ function applyTheme(theme) {
   document.documentElement.style.colorScheme = theme === "dark" ? "dark" : "light";
 }
 
-async function saveSetting(key, val) {
+async function saveSetting(key, val, silent) {
   try {
     await fetch(apiUrl("/api/config"), {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ [key]: val }),
     });
-    toast("✅ 设置已保存", "success");
-  } catch { toast("保存失败", "err"); }
+    if (!silent) toast("✅ 设置已保存", "success");
+  } catch { if (!silent) toast("保存失败", "err"); }
 }
 
 // ======== GitHub 面板 ========
@@ -725,6 +743,34 @@ function toggleGhPanel() {
     switchGhTab("create");
     loadGhList();
   }
+}
+
+function showGhHelp(e) {
+  if (!e) e = window.event;
+  var btn = e.target;
+  var bubble = document.getElementById("ghHelpBubble");
+  if (bubble.style.display !== "none") { bubble.style.display = "none"; return; }
+  var rect = btn.getBoundingClientRect();
+  bubble.style.left = Math.max(4, rect.right - 280) + "px";
+  // 如果下方空间不够，显示在按钮上方
+  if (rect.bottom + 200 > window.innerHeight) {
+    bubble.style.top = (rect.top - 4) + "px";
+    bubble.style.transform = "translateY(-100%)";
+  } else {
+    bubble.style.top = (rect.bottom + 4) + "px";
+    bubble.style.transform = "";
+  }
+  bubble.style.display = "";
+  var closeListener = function(ev) {
+    if (!bubble.contains(ev.target) && ev.target !== btn) {
+      bubble.style.display = "none";
+      document.removeEventListener("click", closeListener);
+    }
+  };
+  setTimeout(function() { document.addEventListener("click", closeListener); }, 0);
+  // 滚动时关闭气泡
+  var scrollClose = function() { bubble.style.display = "none"; document.removeEventListener("click", closeListener); window.removeEventListener("scroll", scrollClose, true); };
+  setTimeout(function() { window.addEventListener("scroll", scrollClose, true); }, 0);
 }
 
 function switchGhTab(tab) {
@@ -1943,12 +1989,15 @@ const IGNORE_TEMPLATES = {
 };
 
 // 全局 diff 模式
-let diffMode = 'detail';
+let diffMode = localStorage.getItem('git-sl-diff-mode') || 'detail';
+
+try { document.getElementById('diffModeBtn').textContent = diffMode === 'detail' ? '详细' : '精简'; } catch {}
 
 function toggleGlobalDiffMode() {
   diffMode = diffMode === 'detail' ? 'simple' : 'detail';
   document.getElementById('diffModeBtn').textContent = diffMode === 'detail' ? '详细' : '精简';
-  // 刷新所有已展开的 diff 窗口
+  localStorage.setItem('git-sl-diff-mode', diffMode);
+  saveSetting('defaultDiffMode', diffMode, true);
   document.querySelectorAll('.diff-inline').forEach(container => {
     if (container._diffLines) {
       const body = container.querySelector('.diff-body');
@@ -2033,6 +2082,8 @@ function showStatusHelp() {
     }
   };
   setTimeout(() => document.addEventListener("click", statusHelpListener), 0);
+  var sc1 = function() { var b=document.getElementById("statusHelpBubble"); if(b)b.style.display="none"; document.removeEventListener("click",statusHelpListener); window.removeEventListener("scroll",sc1,true); };
+  setTimeout(function() { window.addEventListener("scroll", sc1, true); }, 0);
 }
 
 // reset 帮助气泡
@@ -2055,6 +2106,8 @@ function showResetHelp() {
     }
   };
   setTimeout(() => document.addEventListener("click", resetHelpListener), 0);
+  var sc2 = function() { var b=document.getElementById("resetHelpBubble"); if(b)b.style.display="none"; document.removeEventListener("click",resetHelpListener); window.removeEventListener("scroll",sc2,true); };
+  setTimeout(function() { window.addEventListener("scroll", sc2, true); }, 0);
 }
 
 // 确认弹窗
@@ -2086,11 +2139,13 @@ let conflictBlocks = [];
 let conflictPicks = [];
 
 // hash/tag 显示切换
-let showTag = false;
+let showTag = localStorage.getItem("git-sl-show-tag") === "1";
+try { document.getElementById("toggleHashBtn").textContent = showTag ? "hash" : "tag"; } catch {}
 
 function toggleHashDisplay() {
   showTag = !showTag;
   document.getElementById("toggleHashBtn").textContent = showTag ? "hash" : "tag";
+  localStorage.setItem("git-sl-show-tag", showTag ? "1" : "0");
   const cl = document.getElementById("commitList");
   const commits = cl._commits;
   if (commits) renderLog({ ok: true, commits });
