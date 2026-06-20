@@ -466,8 +466,17 @@ export default function (app, ctx) {
     const url = String(body.url || "").trim();
     const dir = String(body.dir || "").trim();
     if (!url) return c.json({ ok: false, message: "请输入仓库 URL" });
+    if (dir) {
+      const fs = await import("node:fs");
+      try {
+        const stat = fs.statSync(dir);
+        if (stat.isDirectory()) {
+          return c.json({ ok: false, warning: true, message: "目标目录已存在，请先删除或换个路径" });
+        }
+      } catch (_) {}
+    }
     try {
-      const cmd = dir ? `gh repo clone ${url} "${dir}"` : `gh repo clone ${url}`;
+      const cmd = `gh repo clone ${url} "${dir}"`;
       const { execSync } = await import("node:child_process");
       execSync(cmd, { encoding: "utf8", timeout: 120000, windowsHide: true });
       return c.json({ ok: true, message: "克隆成功" });

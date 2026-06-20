@@ -443,7 +443,7 @@ body{
   <!-- 克隆 -->
   <div class="gh-tab-content" id="ghTabClone" style="display:none">
     <input type="text" id="ghCloneUrl" placeholder="仓库 URL" autocomplete="off" style="width:100%;padding:5px 8px;border:1px solid var(--hana-border,#d0d5dd);border-radius:6px;font-size:12px;background:var(--hana-bg,#f5f6f8);color:var(--hana-fg,#1a1d24);outline:none;box-sizing:border-box">
-    <input type="text" id="ghCloneDir" placeholder="留空则克隆到仓库路径所在目录" autocomplete="off" style="width:100%;margin-top:4px;padding:5px 8px;border:1px solid var(--hana-border,#d0d5dd);border-radius:6px;font-size:12px;background:var(--hana-bg,#f5f6f8);color:var(--hana-fg,#1a1d24);outline:none;box-sizing:border-box">
+    <input type="text" id="ghCloneDir" placeholder="留空则克隆到仓库路径所在目录" autocomplete="off" style="width:100%;margin-top:6px;padding:5px 8px;border:1px solid var(--hana-border,#d0d5dd);border-radius:6px;font-size:12px;background:var(--hana-bg,#f5f6f8);color:var(--hana-fg,#1a1d24);outline:none;box-sizing:border-box">
     <button onclick="ghCloneRepo()" style="margin-top:6px;width:100%;padding:6px;border:0;border-radius:6px;font-size:12px;font-weight:500;background:var(--hana-accent,#4a8cff);color:#fff;cursor:pointer">克隆</button>
     <div id="ghCloneResult" style="margin-top:6px;font-size:11px"></div>
   </div>
@@ -632,30 +632,21 @@ function cacheClear() {
   } catch {}
 }
 
-// ======== 卡片拖拽排序 ========
+// ======== 卡片拖拽排序（仅上下） ========
 var CARD_ORDER_KEY = "gsl-card-order";
 var _dragSrc = null;
 var _dropTarget = null;
-var _dropPos = ""; // "before" or "after"
+var _dropPos = "";
 
 function initCardDrag() {
   var container = document.getElementById("panelsArea");
   if (!container) return;
-  // 先把 ghCard 移入 panelsArea（如果不在里面）
+  // 先把 ghCard 移入 panelsArea
   var ghCard = document.getElementById("ghCard");
   if (ghCard && ghCard.parentElement !== container) {
     var refCard = document.getElementById("settingsCard");
     if (refCard && refCard.nextSibling) { container.insertBefore(ghCard, refCard.nextSibling); }
     else { container.appendChild(ghCard); }
-    ghCard.draggable = true;
-    var ghHdr = ghCard.querySelector(".card-title");
-    if (ghHdr && !ghHdr.querySelector(".drag-handle")) {
-      var ghHandle = document.createElement("span");
-      ghHandle.className = "drag-handle";
-      ghHandle.textContent = "\u2630";
-      ghHandle.style.cssText = "cursor:grab;color:var(--hana-fg-subtle,#62666d);font-size:11px;flex-shrink:0;user-select:none;margin-right:4px";
-      ghHdr.insertBefore(ghHandle, ghHdr.firstChild);
-    }
   }
   // 恢复保存的顺序
   try {
@@ -671,77 +662,86 @@ function initCardDrag() {
   dropLine.id = "dragDropLine";
   dropLine.style.cssText = "display:none;height:2px;background:var(--hana-accent,#5e6ad2);margin:2px 0;border-radius:1px;pointer-events:none;position:relative;z-index:10";
   container.appendChild(dropLine);
-  // 元素级事件
-  container.addEventListener("dragstart", function(e) {
-    var card = e.target.closest(".card");
-    if (!card) return;
-    _dragSrc = card;
-    card.classList.add("dragging");
-    e.dataTransfer.effectAllowed = "move";
-  });
-  container.addEventListener("dragend", function(e) {
-    dropLine.style.display = "none";
-    container.querySelectorAll(".card").forEach(function(c) { c.classList.remove("dragging"); });
-    _dragSrc = null; _dropTarget = null;
-  });
-  container.addEventListener("dragover", function(e) {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = "move";
-    var cr = container.getBoundingClientRect();
-    var cards = container.querySelectorAll(".card:not(.dragging)");
-    // 检查是否在最上方或最下方
-    if (cards.length > 0) {
-      var firstRect = cards[0].getBoundingClientRect();
-      var lastRect = cards[cards.length - 1].getBoundingClientRect();
-      if (e.clientY < firstRect.top) {
-        // 最上方
-        container.insertBefore(dropLine, cards[0]);
-        dropLine.style.display = "block";
-        _dropTarget = cards[0]; _dropPos = "before";
-        return;
-      }
-      if (e.clientY > lastRect.bottom) {
-        // 最下方
-        container.appendChild(dropLine);
-        dropLine.style.display = "block";
-        _dropTarget = cards[cards.length - 1]; _dropPos = "after";
-        return;
-      }
-    }
-    var target = e.target.closest(".card");
-    if (!target || target === _dragSrc) return;
-    _dropTarget = target;
-    var rect = target.getBoundingClientRect();
-    _dropPos = e.clientY < rect.top + rect.height / 2 ? "before" : "after";
-    if (_dropPos === "before") {
-      container.insertBefore(dropLine, target);
-    } else {
-      container.insertBefore(dropLine, target.nextSibling);
-    }
-    dropLine.style.display = "block";
-  });
-  container.addEventListener("drop", function(e) {
-    e.preventDefault();
-    dropLine.style.display = "none";
-    if (!_dragSrc || !_dropTarget || _dragSrc === _dropTarget) return;
-    if (_dropPos === "before") {
-      container.insertBefore(_dragSrc, _dropTarget);
-    } else {
-      container.insertBefore(_dragSrc, _dropTarget.nextSibling);
-    }
-    saveCardOrder();
-  });
-  // 每个卡片加拖拽把手
+  // 给每个卡片标题栏加把手 + mousedown 启动拖拽
   container.querySelectorAll(".card").forEach(function(c) {
-    c.draggable = true;
     var hdr = c.querySelector(".card-title");
-    if (hdr && !hdr.querySelector(".drag-handle")) {
+    if (!hdr) return;
+    if (!hdr.querySelector(".drag-handle")) {
       var handle = document.createElement("span");
       handle.className = "drag-handle";
       handle.textContent = "\u2630";
-      handle.style.cssText = "cursor:grab;color:var(--hana-fg-subtle,#62666d);font-size:11px;flex-shrink:0;user-select:none;margin-right:4px";
+      handle.style.cssText = "cursor:grab;color:var(--hana-fg-subtle,#62666d);font-size:11px;flex-shrink:0;user-select:none;margin-right:4px;touch-action:none";
       hdr.insertBefore(handle, hdr.firstChild);
     }
+  });
+  // 鼠标/指针事件（仅纵向）
+  var _dragging = false;
+  var _startY = 0;
+  var _lastTarget = null;
+  var _lastPos = "";
+
+  container.addEventListener("pointerdown", function(e) {
+    if (!e.target.closest(".card-title")) return;
+    var card = e.target.closest(".card");
+    if (!card) return;
+    _dragSrc = card;
+    _dragging = false;
+    _startY = e.clientY;
+    _lastTarget = null;
+    _lastPos = "";
+    dropLine.style.display = "none";
+  });
+  container.addEventListener("pointermove", function(e) {
+    if (!_dragSrc) return;
+    var dy = e.clientY - _startY;
+    if (!_dragging && Math.abs(dy) < 4) return;
+    if (!_dragging) {
+      _dragging = true;
+      container.setPointerCapture(e.pointerId);
+      document.body.style.userSelect = "none";
+    }
+    _dragSrc.classList.add("dragging");
+    e.preventDefault();
+    var cards = container.querySelectorAll(".card:not(.dragging)");
+    var target = null;
+    var pos = "after";
+    for (var i = 0; i < cards.length; i++) {
+      var rect = cards[i].getBoundingClientRect();
+      if (e.clientY < rect.top + rect.height / 2) {
+        target = cards[i];
+        pos = "before";
+        break;
+      }
+    }
+    if (!target && cards.length > 0) {
+      target = cards[cards.length - 1];
+      pos = "after";
+    }
+    _dropTarget = target;
+    _dropPos = pos;
+    if (target && (target !== _lastTarget || pos !== _lastPos)) {
+      _lastTarget = target;
+      _lastPos = pos;
+      if (pos === "before") container.insertBefore(dropLine, target);
+      else container.insertBefore(dropLine, target.nextSibling);
+      dropLine.style.display = "block";
+    }
+    if (!target) { dropLine.style.display = "none"; _dropTarget = null; }
+  });
+  container.addEventListener("pointerup", function(e) {
+    if (!_dragSrc) return;
+    dropLine.style.display = "none";
+    _dragSrc.classList.remove("dragging");
+    if (_dragging && _dropTarget && _dropTarget !== _dragSrc) {
+      if (_dropPos === "before") container.insertBefore(_dragSrc, _dropTarget);
+      else container.insertBefore(_dragSrc, _dropTarget.nextSibling);
+      saveCardOrder();
+    }
+    document.body.style.userSelect = "";
+    _dragSrc = null;
+    _dropTarget = null;
+    _dragging = false;
+    _lastTarget = null;
   });
 }
 
@@ -1012,26 +1012,59 @@ async function ghCreateRepo() {
 async function ghCloneRepo() {
   const url = document.getElementById("ghCloneUrl").value.trim();
   if (!url) { toast("请输入仓库 URL", "err"); return; }
+  // 从 URL 提取仓库名
+  const name = url.replace(/\/?$/, "").split("/").pop() || "repo";
   let dir = document.getElementById("ghCloneDir").value.trim();
-  if (!dir) {
+  if (dir) {
+    // 用户在输入框指定了基础目录，追加仓库名作为子目录
+    dir = dir.replace(/[\\/]+$/, "") + "/" + name;
+  } else {
     const saved = currentPath || getSavedPath();
     if (saved) {
       const parent = saved.replace(/[\\/][^\\/]*$/, "");
-      // 从 URL 提取仓库名作为子目录
-      const name = url.replace(/\/?$/, "").split("/").pop() || "repo";
       dir = parent + "/" + name;
     }
   }
+  const btn = document.querySelector("#ghTabClone button:last-of-type");
   const el = document.getElementById("ghCloneResult");
+  btn.disabled = true;
+  btn.textContent = "克隆中...";
+  btn.style.background = "#95a5a6";
   el.textContent = "克隆中...（可能较慢）";
+  el.style.color = "var(--hana-fg,#1a1d24)";
   try {
     const res = await fetch(apiUrl("/api/gh/clone"), {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ url, dir }),
     });
     const data = await res.json();
-    el.textContent = data.ok ? "✅ " + data.message : "❌ " + data.message;
-  } catch (e) { el.textContent = "❌ " + e.message; }
+    if (data.warning) {
+      el.textContent = "⚠️ " + data.message;
+      el.style.color = "#e67e22";
+      btn.style.background = "#e67e22";
+      btn.textContent = "⚠️ 已存在";
+    } else {
+      el.textContent = data.ok ? "✅ " + data.message : "❌ " + data.message;
+      el.style.color = data.ok ? "#27ae60" : "#e74c3c";
+      btn.style.background = data.ok ? "#27ae60" : "#e74c3c";
+      btn.textContent = data.ok ? "✅ 克隆成功" : "❌ 克隆失败";
+    }
+    setTimeout(() => {
+      btn.style.background = "var(--hana-accent,#4a8cff)";
+      btn.textContent = "克隆";
+      btn.disabled = false;
+    }, 2500);
+  } catch (e) {
+    el.textContent = "❌ " + e.message;
+    el.style.color = "#e74c3c";
+    btn.style.background = "#e74c3c";
+    btn.textContent = "❌ 克隆失败";
+    setTimeout(() => {
+      btn.style.background = "var(--hana-accent,#4a8cff)";
+      btn.textContent = "克隆";
+      btn.disabled = false;
+    }, 2500);
+  }
 }
 
 async function loadGhList() {
